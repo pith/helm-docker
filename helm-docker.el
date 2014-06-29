@@ -19,7 +19,7 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-;;; Description:
+;;; Commentary:
 
 ;; This is for now just a work in progress. The goal is to provide UI to access the Docker
 ;; API via Emacs with Helm.
@@ -27,29 +27,33 @@
 ;;; Dependency:
 ;;  - docker-client.el (from https://github.com/pith/docker-client)
 
+;;; Code:
+
 (require 'url)
 (require 'json)
 (require 'helm)
 (require 'docker-client)
 
 ;; Extract name from the "docker ps"
+
 (defun dkr/search-containers ()
-  "Returns container names form a list of container"
+  "Return container names form a list of container."
   (mapcar (lambda (container)
 	    (elt (cdr (assoc 'Names container)) 0 ))
 	  (dkr/docker-containers)))
 
 ;; Actions for container
 (defun dkr/helm-action-for-container (actions containerID)
-  "Return a list of helm actions available for this container."
+  "Return a list of helm ACTIONS available for this container.
+Argument CONTAINERID container name."
   '(("Start container" . dkr/start-container)
   ("Stop container" . dkr/stop-container)))
 
 ;; Gets containers and the list of action available on them
 (defun dkr/helm-containers ()
-  "Returns a list of container for Helm"
+  "Return a list of container for Helm."
   (interactive)
-  (helm :sources 
+  (helm :sources
 	'((name . "Docker")
 	  (candidates . dkr/search-containers)
 	  (action-transformer . dkr/helm-action-for-container)
@@ -64,3 +68,7 @@
 
 
 
+
+(provide 'helm-docker)
+
+;;; helm-docker.el ends here
