@@ -36,28 +36,52 @@
 
 ;; Extract name from the "docker ps"
 
-(defun dkr/search-containers ()
+(defun dkr/search-containers (all)
   "Return container names form a list of container."
-  (mapcar (lambda (container)
-	    (elt (cdr (assoc 'Names container)) 0 ))
-	  (dkr/docker-containers)))
+  (mapcar 
+   (lambda (container)
+     (elt (cdr (assoc 'Names container)) 0 ))
+   (dkr/docker-containers all))
+  )
+
+(defun dkr/container-candidates (all)
+  "Transform a list of container names into a list of candidates.
+
+ (name1 name2) ->  ((name1 . name1) (name2 . name2))"
+  (mapcar
+   (lambda (container)
+     (cons container container))
+   (dkr/search-containers all)))
+
 
 ;; Actions for container
 (defun dkr/helm-action-for-container (actions containerID)
   "Return a list of helm ACTIONS available for this container.
 Argument CONTAINERID container name."
   '(("Start container" . dkr/start-container)
-  ("Stop container" . dkr/stop-container)))
+    ("Stop container" . dkr/stop-container)))
 
-;; Gets containers and the list of action available on them
-(defun dkr/helm-containers ()
-  "Return a list of container for Helm."
+(defvar helm-source-runnung-containers-list nil)
+(setq helm-source-runnung-containers-list
+      `((name . "Running containers")
+        (candidates . ,(dkr/container-candidates "0"))
+        (action-transformer . dkr/helm-action-for-container))
+      )
+(defvar helm-source-containers-list nil)
+(setq helm-source-containers-list
+      `((name . "All containers")
+        (candidates . ,(dkr/container-candidates "1"))
+        (action-transformer . dkr/helm-action-for-container))
+      )
+
+(defun helm-docker-containers ()
+  "Return the list of all the container with Helm."
   (interactive)
   (helm :sources
-	'((name . "Docker")
-	  (candidates . dkr/search-containers)
-	  (action-transformer . dkr/helm-action-for-container)
-	  )))
+        '(helm-source-runnung-containers-list
+          helm-source-containers-list)
+        :buffer "*helm Docker containers*"
+        ))
 
 ;; get a container IP from docker inspect
 ;; (defun dkr/docker-get-ip (containerID)
