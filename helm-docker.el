@@ -40,7 +40,7 @@
   "Return container names form a list of container."
   (mapcar 
    (lambda (container)
-     (elt (cdr (assoc 'Names container)) 0 ))
+     (substring (elt (cdr (assoc 'Names container)) 0 ) 1))
    (dkr/docker-containers all))
   )
 
