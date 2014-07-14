@@ -36,13 +36,27 @@
 
 ;; Extract name from the "docker ps"
 
-(defun dkr/search-containers (all)
+(defun dkr/container-names (container)
   "Return container names form a list of container."
-  (mapcar 
-   (lambda (container)
-     (substring (elt (cdr (assoc 'Names container)) 0 ) 1))
-   (dkr/docker-containers all))
+  (substring (elt (cdr (assoc 'Names container)) 0 ) 1)
   )
+
+(defun dkr/container-image (container)
+  "Return container names form a list of container."
+  (cdr (assoc 'Image  container)))
+
+(defun dkr/container-command (container)
+  "Return container names form a list of container."
+  (cdr (assoc 'Command  container)))
+
+
+(defun dkr/container--show-detail (container)
+  (format "%-20s %-35s %s" 
+          (dkr/container-names container) 
+          (dkr/container-image container)
+          (dkr/container-command container)          
+          ))
+
 
 (defun dkr/container-candidates (all)
   "Transform a list of container names into a list of candidates.
@@ -50,8 +64,9 @@
  (name1 name2) ->  ((name1 . name1) (name2 . name2))"
   (mapcar
    (lambda (container)
-     (cons container container))
-   (dkr/search-containers all)))
+     (cons (dkr/container--show-detail container) (dkr/container-names container)))
+   (dkr/docker-containers all)
+   ))
 
 
 ;; Actions for container
