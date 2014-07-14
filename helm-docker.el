@@ -1,4 +1,4 @@
-;;; helm-docker.el --- Helm Docker
+;;; helm-docker.el --- Helm support for Docker
 
 ;; URL: https://github.com/pith/helm-docker
 ;; Created: 16th June 2014
@@ -64,13 +64,15 @@ Argument CONTAINERID container name."
 (defvar helm-source-runnung-containers-list nil)
 (setq helm-source-runnung-containers-list
       `((name . "Running containers")
-        (candidates . ,(dkr/container-candidates "0"))
+        (candidates . (lambda ()
+                        (dkr/container-candidates "0")))
         (action-transformer . dkr/helm-action-for-container))
       )
 (defvar helm-source-containers-list nil)
 (setq helm-source-containers-list
       `((name . "All containers")
-        (candidates . ,(dkr/container-candidates "1"))
+        (candidates . (lambda ()
+                        (dkr/container-candidates "1")))
         (action-transformer . dkr/helm-action-for-container))
       )
 
