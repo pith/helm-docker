@@ -34,6 +34,30 @@
 (require 'helm)
 (require 'docker-client)
 
+(defvar helm-source-runnung-containers-list nil)
+(setq helm-source-runnung-containers-list
+      `((name . "Running containers")
+        (candidates . (lambda ()
+                        (dkr/container-candidates "0")))
+        (action-transformer . dkr/helm-action-for-container)))
+
+(defvar helm-source-containers-list nil)
+(setq helm-source-containers-list
+      `((name . "All containers")
+        (candidates . (lambda ()
+                        (dkr/container-candidates "1")))
+        (action-transformer . dkr/helm-action-for-container)))
+
+(defface helm-container-image
+    '((t (:foreground "Sienna3")))
+  "Face used for images in `helm-docker-containers'."
+  :group 'docker)
+
+(defface helm-container-command 
+    '((t (:foreground "SlateGray")))
+  "Face used for command in `helm-docker-containers'."
+  :group 'docker)
+
 ;; Extract name from the "docker ps"
 
 (defun dkr/container-names (container)
@@ -49,14 +73,11 @@
   "Return container names form a list of container."
   (cdr (assoc 'Command  container)))
 
-
 (defun dkr/container--show-detail (container)
   (format "%-20s %-35s %s" 
           (dkr/container-names container) 
-          (dkr/container-image container)
-          (dkr/container-command container)          
-          ))
-
+          (propertize (dkr/container-image container) 'face 'helm-container-image)
+          (propertize (dkr/container-command container) 'face 'helm-container-command)))
 
 (defun dkr/container-candidates (all)
   "Transform a list of container names into a list of candidates.
@@ -75,21 +96,6 @@
 Argument CONTAINERID container name."
   '(("Start container" . dkr/start-container)
     ("Stop container" . dkr/stop-container)))
-
-(defvar helm-source-runnung-containers-list nil)
-(setq helm-source-runnung-containers-list
-      `((name . "Running containers")
-        (candidates . (lambda ()
-                        (dkr/container-candidates "0")))
-        (action-transformer . dkr/helm-action-for-container))
-      )
-(defvar helm-source-containers-list nil)
-(setq helm-source-containers-list
-      `((name . "All containers")
-        (candidates . (lambda ()
-                        (dkr/container-candidates "1")))
-        (action-transformer . dkr/helm-action-for-container))
-      )
 
 (defun helm-docker-containers ()
   "Return the list of all the container with Helm."
